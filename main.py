@@ -19,9 +19,9 @@ def is_during_business_hours():
 def voice():
     if not is_during_business_hours():
         twiml = VoiceResponse()
-        twiml.say("You’ve reached Carson Valley Psychological Services. Our office is currently closed.", voice="Polly.Joanna", language="en-US")
+        twiml.say("You’ve reached Carson Valley Psychological Services. Our office is currently closed.", voice="Polly.Emma", language="en-US")
         twiml.say("If you are experiencing a psychiatric emergency, please call 911 or go to the nearest emergency room. "
-                  "If you need to speak with someone immediately, please dial 9-8-8 to reach a trained crisis worker.", voice="Polly.Joanna", language="en-US")
+                  "If you need to speak with someone immediately, please dial 9-8-8 to reach a trained crisis worker.", voice="Polly.Emma", language="en-US")
         twiml.say("Otherwise, please leave a message with your name, phone number, and the reason for your call. Someone will get back to you during business hours.", voice="Polly.Joanna", language="en-US")
         twiml.record(
             maxLength=120,
@@ -57,9 +57,9 @@ def voice():
 
     twiml = VoiceResponse()
     gather = Gather(input='speech', action='/voice', method='POST', timeout=5)
-    gather.say(reply_text, voice="Polly.Joanna", language="en-US")
+    gather.say(reply_text, voice="Polly.Emma", language="en-US")
     twiml.append(gather)
-    twiml.say("We didn't catch that. Please call again if you need help.", voice="Polly.Joanna")
+    twiml.say("We didn't catch that. Please call again if you need help.", voice="Polly.Emma")
     twiml.hangup()
 
     return Response(str(twiml), mimetype="text/xml")
