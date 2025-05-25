@@ -11,6 +11,8 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 @app.route("/voice", methods=["POST"])
 def voice():
     speech_text = request.form.get("SpeechResult")
+if not speech_text:
+    speech_text = "Hello?"
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
