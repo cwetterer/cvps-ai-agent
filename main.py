@@ -3,13 +3,35 @@ from flask import Flask, request, Response
 from twilio.twiml.voice_response import VoiceResponse, Gather
 import openai
 import os
+from datetime import datetime
+import pytz
 
 app = Flask(__name__)
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+def is_during_business_hours():
+    pacific = pytz.timezone("US/Pacific")
+    now = datetime.now(pacific)
+    return now.weekday() < 5 and 9 <= now.hour < 17  # Mon–Fri, 9am–5pm
+
 @app.route("/voice", methods=["POST"])
 def voice():
+    if not is_during_business_hours():
+        twiml = VoiceResponse()
+        twiml.say("You’ve reached Carson Valley Psychological Services. Our office is currently closed.", voice="Polly.Joanna", language="en-US")
+        twiml.say("If you are experiencing a psychiatric emergency, please call 911 or go to the nearest emergency room. "
+                  "If you need to speak with someone immediately, please dial 9-8-8 to reach a trained crisis worker.", voice="Polly.Joanna", language="en-US")
+        twiml.say("Otherwise, please leave a message with your name, phone number, and the reason for your call. Someone will get back to you during business hours.", voice="Polly.Joanna", language="en-US")
+        twiml.record(
+            maxLength=120,
+            action="/handle-recording",
+            transcribe=True,
+            transcribeCallback="/save-transcript"
+        )
+        twiml.hangup()
+        return Response(str(twiml), mimetype="text/xml")
+
     speech_text = request.form.get("SpeechResult")
     if not speech_text:
         speech_text = "Hello?"
@@ -48,4 +70,3 @@ def index():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
-
