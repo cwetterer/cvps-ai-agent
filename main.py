@@ -7,7 +7,7 @@ import pytz
 
 app = Flask(__name__)
 
-# Load your OpenAI API key from environment variables
+# Set OpenAI key from environment
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def is_during_business_hours():
@@ -72,9 +72,18 @@ def voice():
 
     return Response(str(twiml), mimetype="text/xml")
 
+@app.route("/handle-recording", methods=["POST"])
+def handle_recording():
+    return Response("Recording received.", mimetype="text/plain")
+
+@app.route("/save-transcript", methods=["POST"])
+def save_transcript():
+    return Response("Transcript saved.", mimetype="text/plain")
+
 @app.route("/")
 def index():
     return "AI Voice Agent is running."
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
+
