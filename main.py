@@ -7,7 +7,7 @@ import pytz
 
 app = Flask(__name__)
 
-# Set OpenAI key from environment
+# Get OpenAI API key from environment
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def is_during_business_hours():
@@ -36,32 +36,39 @@ def voice():
     if not speech_text:
         speech_text = "Hello?"
 
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You are Melissa, a warm, professional, and efficient virtual receptionist for Carson Valley Psychological Services. "
-                    "Begin all responses with: 'Carson Valley Psychological Services, this is Melissa. I am a virtual assistant, what can I help you with today?' "
-                    "Keep replies brief—1 to 2 sentences max—and speak clearly and politely. "
-                    "Your job is to answer questions about the services offered and gather key caller information. "
-                    "Let the caller know that Carson Valley provides forensic, neuropsychological, and general psychological evaluations. "
-                    "Politely explain that the practice is very busy and only accepts limited insurance. Do not offer psychotherapy. "
-                    "Inform the caller that the best way to book an appointment is to submit an inquiry through the website: www.carsonpsychological.com. "
-                    "You must ask the caller what type of evaluation they are seeking and who referred them. "
-                    "Be sure to gather the following: the caller’s full name, phone number, and email address (if they are willing), as well as the type of evaluation requested. "
-                    "Let them know that Dr. Wetterer will respond in a timely manner."
-                )
-            },
-            {
-                "role": "user",
-                "content": speech_text
-            }
-        ]
-    )
-
-    reply_text = response.choices[0].message["content"]
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are Melissa, a warm, professional, and efficient virtual receptionist for Carson Valley Psychological Services. "
+                        "Begin all responses with: 'Carson Valley Psychological Services, this is Melissa. I am a virtual assistant, what can I help you with today?' "
+                        "Keep replies brief—1 to 2 sentences max—and speak clearly and politely. "
+                        "Your job is to answer questions about the services offered and gather key caller information. "
+                        "Let the caller know that Carson Valley provides forensic, neuropsychological, and general psychological evaluations. "
+                        "Politely explain that the practice is very busy and only accepts limited insurance. Do not offer psychotherapy. "
+                        "Inform the caller that the best way to book an appointment is to submit an inquiry through the website: www.carsonpsychological.com. "
+                        "You must ask the caller what type of evaluation they are seeking and who referred them. "
+                        "Be sure to gather the following: the caller’s full name, phone number, and email address (if they are willing), as well as the type of evaluation requested. "
+                        "Let them know that Dr. Wetterer will respond in a timely manner."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": speech_text
+                }
+            ],
+            timeout=10
+        )
+        reply_text = response.choices[0].message["content"]
+    except Exception as e:
+        print(f"[Melissa Error] GPT call failed: {e}")
+        reply_text = (
+            "I'm sorry, I’m having trouble responding right now. "
+            "Please leave your name, number, and the type of evaluation you're seeking. Someone will get back to you shortly."
+        )
 
     twiml = VoiceResponse()
     gather = Gather(input='speech', action='/voice', method='POST', timeout=5)
@@ -86,4 +93,3 @@ def index():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
-
